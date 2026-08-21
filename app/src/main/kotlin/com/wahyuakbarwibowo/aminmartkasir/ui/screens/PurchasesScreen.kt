@@ -41,6 +41,7 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.google.zxing.client.android.Intents
 import com.wahyuakbarwibowo.aminmartkasir.ui.scanner.BarcodeCaptureActivity
+import com.wahyuakbarwibowo.aminmartkasir.utils.RupiahVisualTransformation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -678,6 +679,7 @@ private fun AddPurchaseItemDialog(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         prefix = { Text("Rp ") },
+                        visualTransformation = RupiahVisualTransformation(),
                         modifier = Modifier.weight(2f)
                     )
                 }

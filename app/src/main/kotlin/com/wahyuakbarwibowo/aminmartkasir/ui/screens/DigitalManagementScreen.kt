@@ -34,6 +34,7 @@ import com.wahyuakbarwibowo.aminmartkasir.data.local.entity.DigitalCategoryEntit
 import com.wahyuakbarwibowo.aminmartkasir.data.local.entity.DigitalProductEntity
 import com.wahyuakbarwibowo.aminmartkasir.ui.viewmodel.DigitalTransactionViewModel
 import com.wahyuakbarwibowo.aminmartkasir.utils.CurrencyUtils.formatCurrency
+import com.wahyuakbarwibowo.aminmartkasir.utils.RupiahVisualTransformation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -347,7 +348,8 @@ fun AddDigitalProductDialog(
                     label = { Text("Harga Modal") }, 
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    prefix = { Text("Rp ") }
+                    prefix = { Text("Rp ") },
+                    visualTransformation = RupiahVisualTransformation(),
                 )
                 OutlinedTextField(
                     value = sellingPrice, 
@@ -355,7 +357,8 @@ fun AddDigitalProductDialog(
                     label = { Text("Harga Jual") }, 
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    prefix = { Text("Rp ") }
+                    prefix = { Text("Rp ") },
+                    visualTransformation = RupiahVisualTransformation(),
                 )
             }
         },

@@ -26,6 +26,7 @@ import com.wahyuakbarwibowo.aminmartkasir.utils.CurrencyUtils.formatCurrency
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.*
+import com.wahyuakbarwibowo.aminmartkasir.utils.RupiahVisualTransformation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -278,7 +279,8 @@ fun DebtPaymentDialog(
                     label = { Text("Jumlah Bayar") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    prefix = { Text("Rp ") }
+                    prefix = { Text("Rp ") },
+                    visualTransformation = RupiahVisualTransformation(),
                 )
             }
         },
@@ -338,7 +340,8 @@ fun AddDebtDialog(
                     label = { Text("Jumlah Hutang") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    prefix = { Text("Rp ") }
+                    prefix = { Text("Rp ") },
+                    visualTransformation = RupiahVisualTransformation(),
                 )
 
                 OutlinedTextField(

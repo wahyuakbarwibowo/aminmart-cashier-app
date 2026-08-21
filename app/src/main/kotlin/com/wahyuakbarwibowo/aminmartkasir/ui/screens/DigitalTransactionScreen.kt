@@ -44,6 +44,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import com.wahyuakbarwibowo.aminmartkasir.utils.RupiahVisualTransformation
 
 // Category colors mapping
 private val CategoryColors = mapOf(
@@ -721,12 +722,13 @@ fun DigitalPaymentDialog(
 
                 OutlinedTextField(
                     value = paidAmount,
-                    onValueChange = { onPaidAmountChange(it) },
+                    onValueChange = { if (it.all { ch -> ch.isDigit() }) onPaidAmountChange(it) },
                     label = { Text("Jumlah Bayar") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     prefix = { Text("Rp ") },
+                    visualTransformation = RupiahVisualTransformation(),
                     shape = RoundedCornerShape(12.dp),
                     textStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                 )
