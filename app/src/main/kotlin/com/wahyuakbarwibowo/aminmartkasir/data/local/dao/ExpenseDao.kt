@@ -17,6 +17,17 @@ interface ExpenseDao {
     @Query("SELECT * FROM expenses ORDER BY id DESC LIMIT :limit OFFSET :offset")
     suspend fun getExpenses(limit: Int, offset: Int): List<ExpenseEntity>
 
+    @Query(
+        "SELECT * FROM expenses WHERE createdAt >= :startDateTime AND createdAt <= :endDateTime " +
+            "ORDER BY id DESC LIMIT :limit OFFSET :offset"
+    )
+    suspend fun getExpensesByDateRange(
+        startDateTime: String,
+        endDateTime: String,
+        limit: Int,
+        offset: Int
+    ): List<ExpenseEntity>
+
     @Query("SELECT * FROM expenses WHERE id = :id")
     suspend fun getExpenseById(id: Long): ExpenseEntity?
 

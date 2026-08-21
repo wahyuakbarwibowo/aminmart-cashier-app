@@ -27,4 +27,8 @@ object DateUtils {
     fun formatDay(date: Date): String = dayFormat.get()!!.format(date)
     fun formatDate(date: Date): String = dateFormat.get()!!.format(date)
     fun formatDateTime(date: Date): String = dateTimeFormat.get()!!.format(date)
+
+    /** "yyyy-MM-dd" -> batas bawah/atas hari itu, untuk perbandingan string di query. */
+    fun startOfDay(date: String): String = "$date 00:00:00"
+    fun endOfDay(date: String): String = "$date 23:59:59"
 }
