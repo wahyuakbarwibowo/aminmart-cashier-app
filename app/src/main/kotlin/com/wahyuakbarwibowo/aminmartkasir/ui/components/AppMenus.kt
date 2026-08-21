@@ -28,21 +28,48 @@ val primaryMenuItems = listOf(
     AppMenuItem(Screen.Products.route, "Produk", Icons.Default.Inventory2)
 )
 
-val secondaryMenuItems = listOf(
-    AppMenuItem(Screen.SalesHistory.route, "Riwayat Penjualan", Icons.AutoMirrored.Filled.ReceiptLong),
-    AppMenuItem(Screen.Shift.route, "Shift Kasir", Icons.Default.PointOfSale),
-    AppMenuItem(Screen.Reports.route, "Laporan", Icons.Default.Assessment),
-    AppMenuItem(Screen.ProfitLoss.route, "Laba Rugi", Icons.AutoMirrored.Filled.ShowChart),
-    AppMenuItem(Screen.Customers.route, "Daftar Pelanggan", Icons.Default.People),
-    AppMenuItem(Screen.Expenses.route, "Pengeluaran", Icons.Default.MoneyOff),
-    AppMenuItem(Screen.StockHistory.route, "Riwayat Stok", Icons.Default.History),
-    AppMenuItem(Screen.DigitalReports.route, "Riwayat Digital", Icons.Default.Receipt),
-    AppMenuItem(Screen.Receivable.route, "Buku Hutang", Icons.AutoMirrored.Filled.MenuBook),
-    AppMenuItem(Screen.DigitalManagement.route, "Kelola Produk Digital", Icons.Default.AppRegistration),
-    AppMenuItem(Screen.Purchases.route, "Pembelian", Icons.Default.LocalShipping),
-    AppMenuItem(Screen.Backup.route, "Backup & Restore", Icons.Default.Backup),
-    AppMenuItem(Screen.Settings.route, "Pengaturan", Icons.Default.Settings)
+data class AppMenuGroup(
+    val title: String,
+    val items: List<AppMenuItem>
 )
+
+val secondaryMenuGroups = listOf(
+    AppMenuGroup(
+        "Transaksi",
+        listOf(
+            AppMenuItem(Screen.SalesHistory.route, "Riwayat Penjualan", Icons.AutoMirrored.Filled.ReceiptLong),
+            AppMenuItem(Screen.DigitalReports.route, "Riwayat Digital", Icons.Default.Receipt),
+            AppMenuItem(Screen.Purchases.route, "Pembelian", Icons.Default.LocalShipping),
+            AppMenuItem(Screen.Expenses.route, "Pengeluaran", Icons.Default.MoneyOff),
+            AppMenuItem(Screen.Receivable.route, "Buku Hutang", Icons.AutoMirrored.Filled.MenuBook)
+        )
+    ),
+    AppMenuGroup(
+        "Laporan",
+        listOf(
+            AppMenuItem(Screen.Reports.route, "Laporan", Icons.Default.Assessment),
+            AppMenuItem(Screen.ProfitLoss.route, "Laba Rugi", Icons.AutoMirrored.Filled.ShowChart),
+            AppMenuItem(Screen.StockHistory.route, "Riwayat Stok", Icons.Default.History),
+            AppMenuItem(Screen.Shift.route, "Shift Kasir", Icons.Default.PointOfSale)
+        )
+    ),
+    AppMenuGroup(
+        "Data Master",
+        listOf(
+            AppMenuItem(Screen.Customers.route, "Daftar Pelanggan", Icons.Default.People),
+            AppMenuItem(Screen.DigitalManagement.route, "Kelola Produk Digital", Icons.Default.AppRegistration)
+        )
+    ),
+    AppMenuGroup(
+        "Sistem",
+        listOf(
+            AppMenuItem(Screen.Backup.route, "Backup & Restore", Icons.Default.Backup),
+            AppMenuItem(Screen.Settings.route, "Pengaturan", Icons.Default.Settings)
+        )
+    )
+)
+
+val secondaryMenuItems = secondaryMenuGroups.flatMap { it.items }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,38 +98,45 @@ fun MoreMenuSheet(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.height(16.dp))
-        secondaryMenuItems.forEach { item ->
-            Surface(
-                onClick = { onNavigate(item.route) },
-                tonalElevation = if (currentRoute == item.route) 2.dp else 0.dp,
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                ListItem(
-                    headlineContent = { Text(item.title) },
-                    leadingContent = { Icon(item.icon, contentDescription = null) },
-                    trailingContent = {
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            if (item.route == Screen.Settings.route && settingsBadgeCount > 0) {
-                                Badge(modifier = Modifier.padding(end = if (currentRoute == item.route) 8.dp else 0.dp)) {
-                                    Text(settingsBadgeCount.toString())
+        secondaryMenuGroups.forEach { group ->
+            Text(
+                text = group.title,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+            )
+            group.items.forEach { item ->
+                Surface(
+                    onClick = { onNavigate(item.route) },
+                    tonalElevation = if (currentRoute == item.route) 2.dp else 0.dp,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    ListItem(
+                        headlineContent = { Text(item.title) },
+                        leadingContent = { Icon(item.icon, contentDescription = null) },
+                        trailingContent = {
+                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                if (item.route == Screen.Settings.route && settingsBadgeCount > 0) {
+                                    Badge(modifier = Modifier.padding(end = if (currentRoute == item.route) 8.dp else 0.dp)) {
+                                        Text(settingsBadgeCount.toString())
+                                    }
+                                }
+                                if (currentRoute == item.route) {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
                                 }
                             }
-                            if (currentRoute == item.route) {
-                                Icon(
-                                    Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    },
-                    colors = ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surface
+                        },
+                        colors = ListItemDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        )
                     )
-                )
+                }
             }
-            HorizontalDivider()
         }
         Spacer(Modifier.height(8.dp))
         TextButton(
