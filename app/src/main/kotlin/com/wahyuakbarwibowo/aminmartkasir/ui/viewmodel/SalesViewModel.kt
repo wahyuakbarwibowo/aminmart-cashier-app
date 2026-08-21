@@ -318,6 +318,17 @@ class SalesViewModel(
         }
     }
 
+    /** Kembalikan item yang baru saja dihapus dari keranjang (aksi urungkan). */
+    fun restoreCartItem(item: CartItem) {
+        _uiState.update { currentState ->
+            if (currentState.cartItems.any { it.product.id == item.product.id && it.variant?.id == item.variant?.id }) {
+                currentState
+            } else {
+                recalculateState(currentState.copy(cartItems = currentState.cartItems + item))
+            }
+        }
+    }
+
     private fun recalculateState(state: SalesTransactionUiState): SalesTransactionUiState {
         val subtotal = state.cartItems.sumOf { it.subtotal }
         val pointsValue = state.pointsRedeemed * 100

@@ -37,7 +37,7 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.ViewModelProvider.Factory
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import android.widget.Toast
+import kotlinx.coroutines.launch
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.journeyapps.barcodescanner.ScanContract
@@ -82,6 +82,24 @@ fun SalesTransactionScreen(
     val cartListState = rememberLazyListState()
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarScope = rememberCoroutineScope()
+
+    // Pesan singkat di kasir: snackbar menumpuk di atas dock, dan bisa diberi aksi.
+    fun showMessage(message: String) {
+        snackbarScope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
+    fun showUndoMessage(message: String, onUndo: () -> Unit) {
+        snackbarScope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            val result = snackbarHostState.showSnackbar(message, actionLabel = "Urungkan")
+            if (result == SnackbarResult.ActionPerformed) onUndo()
+        }
+    }
 
     // Scan barcode langsung dari layar kasir -> auto tambah ke keranjang
     val quickScanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
@@ -91,15 +109,15 @@ fun SalesTransactionScreen(
                 when (res) {
                     is BarcodeAddResult.Added -> {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        Toast.makeText(context, "${res.productName} ditambah", Toast.LENGTH_SHORT).show()
+                        showMessage("${res.productName} ditambah")
                     }
                     is BarcodeAddResult.OutOfStock -> {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        Toast.makeText(context, "Stok ${res.productName} habis/tidak mencukupi", Toast.LENGTH_SHORT).show()
+                        showMessage("Stok ${res.productName} habis/tidak mencukupi")
                     }
                     is BarcodeAddResult.NotFound -> {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        Toast.makeText(context, "Produk barcode \"$scannedCode\" tidak ditemukan", Toast.LENGTH_SHORT).show()
+                        showMessage("Produk barcode \"$scannedCode\" tidak ditemukan")
                     }
                 }
             }
@@ -119,7 +137,7 @@ fun SalesTransactionScreen(
             }
             quickScanLauncher.launch(options)
         } else {
-            Toast.makeText(context, "Izin kamera diperlukan untuk scan barcode", Toast.LENGTH_SHORT).show()
+            showMessage("Izin kamera diperlukan untuk scan barcode")
         }
     }
 
@@ -134,6 +152,7 @@ fun SalesTransactionScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { 
@@ -170,7 +189,7 @@ fun SalesTransactionScreen(
                     if (uiState.cartItems.isNotEmpty()) {
                         IconButton(onClick = {
                             viewModel.holdCurrentCart("")
-                            Toast.makeText(context, "Pesanan ditahan", Toast.LENGTH_SHORT).show()
+                            showMessage("Pesanan ditahan")
                         }) {
                             Icon(Icons.Default.PauseCircle, contentDescription = "Tahan pesanan", tint = MaterialTheme.colorScheme.onPrimary)
                         }
@@ -249,15 +268,20 @@ fun SalesTransactionScreen(
                                 item = item,
                                 onIncreaseQty = { 
                                     if (!viewModel.updateCartItemQty(item.product.id, item.variant?.id, item.qty + 1)) {
-                                        Toast.makeText(context, "Stok tidak mencukupi", Toast.LENGTH_SHORT).show()
+                                        showMessage("Stok tidak mencukupi")
                                     }
                                 },                                onDecreaseQty = { viewModel.updateCartItemQty(item.product.id, item.variant?.id, item.qty - 1) },
                                 onSetQty = { newQty ->
                                     if (!viewModel.updateCartItemQty(item.product.id, item.variant?.id, newQty)) {
-                                        Toast.makeText(context, "Stok tidak mencukupi", Toast.LENGTH_SHORT).show()
+                                        showMessage("Stok tidak mencukupi")
                                     }
                                 },
-                                onRemove = { viewModel.removeFromCart(item.product.id, item.variant?.id) },
+                                onRemove = {
+                                    viewModel.removeFromCart(item.product.id, item.variant?.id)
+                                    showUndoMessage("${item.product.name} dihapus") {
+                                        viewModel.restoreCartItem(item)
+                                    }
+                                },
                                 onEdit = {
                                     itemToEdit = item
                                     showEditProductDialog = true
@@ -370,10 +394,10 @@ fun SalesTransactionScreen(
                     viewModel.searchProducts("") // Clear search after selection
                     // showProductSelector = false // Allow multiple add
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) // Light tick
-                    Toast.makeText(context, "${product.name} ditambah", Toast.LENGTH_SHORT).show()
+                    showMessage("${product.name} ditambah")
                 } else {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress) // Heavy vibe on error
-                    Toast.makeText(context, "Stok ${product.name} habis/tidak mencukupi", Toast.LENGTH_SHORT).show()
+                    showMessage("Stok ${product.name} habis/tidak mencukupi")
                 }
             },
             onCreateProduct = {
@@ -543,7 +567,7 @@ fun SalesTransactionScreen(
                 if (viewModel.resumeHeldOrder(id)) {
                     showHeldOrdersDialog = false
                 } else {
-                    Toast.makeText(context, "Kosongkan keranjang dulu sebelum lanjut pesanan", Toast.LENGTH_SHORT).show()
+                    showMessage("Kosongkan keranjang dulu sebelum lanjut pesanan")
                 }
             },
             onDelete = { id -> viewModel.deleteHeldOrder(id) },
@@ -843,7 +867,7 @@ fun ProductSelectorDialog(
             }
             barcodeLauncher.launch(options)
         } else {
-            Toast.makeText(context, "Izin kamera diperlukan untuk scan barcode", Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(context, "Izin kamera diperlukan untuk scan barcode", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
     
