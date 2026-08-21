@@ -71,6 +71,7 @@ fun SalesTransactionScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showProductSelector by remember { mutableStateOf(false) }
+    var showClearCartConfirm by remember { mutableStateOf(false) }
     var showPaymentMethodSelector by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     var showPrinterDialog by remember { mutableStateOf(false) }
@@ -173,7 +174,7 @@ fun SalesTransactionScreen(
                         }) {
                             Icon(Icons.Default.PauseCircle, contentDescription = "Tahan pesanan", tint = MaterialTheme.colorScheme.onPrimary)
                         }
-                        IconButton(onClick = { viewModel.clearCart() }) {
+                        IconButton(onClick = { showClearCartConfirm = true }) {
                             Icon(Icons.Default.DeleteSweep, contentDescription = "Kosongkan", tint = MaterialTheme.colorScheme.onPrimary)
                         }
                     }
@@ -332,6 +333,26 @@ fun SalesTransactionScreen(
                 }
             }
         }
+    }
+
+    if (showClearCartConfirm) {
+        AlertDialog(
+            onDismissRequest = { showClearCartConfirm = false },
+            title = { Text("Kosongkan Keranjang?") },
+            text = { Text("Semua ${uiState.cartItems.size} item di keranjang akan dihapus.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.clearCart()
+                        showClearCartConfirm = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Kosongkan") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearCartConfirm = false }) { Text("Batal") }
+            }
+        )
     }
 
     if (showProductSelector) {
