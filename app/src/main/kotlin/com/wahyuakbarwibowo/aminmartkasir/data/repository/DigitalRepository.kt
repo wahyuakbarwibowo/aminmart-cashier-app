@@ -66,6 +66,11 @@ class PhoneHistoryRepository(private val phoneHistoryDao: PhoneHistoryDao) {
     suspend fun getPhoneHistory(limit: Int, offset: Int): List<PhoneHistoryEntity> {
         return phoneHistoryDao.getPhoneHistory(limit, offset)
     }
+    suspend fun getPhoneHistoryByRange(startDate: String, endDate: String): List<PhoneHistoryEntity> {
+        return phoneHistoryDao.getPhoneHistoryByRange(startDate, endDate)
+    }
+
+
 
     fun getPhoneHistoryByCategory(category: String): Flow<List<PhoneHistoryEntity>> {
         return phoneHistoryDao.getPhoneHistoryByCategory(category)

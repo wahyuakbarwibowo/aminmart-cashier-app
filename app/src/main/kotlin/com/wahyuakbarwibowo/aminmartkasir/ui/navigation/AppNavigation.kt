@@ -203,8 +203,7 @@ fun AppNavigation(
                 onNavigateBack = { navController.popBackStack() },
                 onOpenDrawer = onOpenDrawer,
                 viewModelFactory = viewModelFactory,
-                salesHistoryViewModel = viewModel(factory = viewModelFactory),
-                expenseViewModel = viewModel(factory = viewModelFactory),
+                profitLossViewModel = viewModel(factory = viewModelFactory),
                 digitalTransactionViewModel = viewModel(factory = viewModelFactory)
             )
         }

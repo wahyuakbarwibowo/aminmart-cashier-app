@@ -21,6 +21,9 @@ interface PhoneHistoryDao {
     @Query("SELECT * FROM phone_history ORDER BY id DESC LIMIT 100")
     fun getPhoneHistoryByDateRange(): Flow<List<PhoneHistoryEntity>>
 
+    @Query("SELECT * FROM phone_history WHERE createdAt >= :startDate AND createdAt <= :endDate ORDER BY id DESC")
+    suspend fun getPhoneHistoryByRange(startDate: String, endDate: String): List<PhoneHistoryEntity>
+
     @Query("SELECT SUM(sellingPrice) FROM phone_history WHERE createdAt >= :startDate AND createdAt <= :endDate")
     suspend fun getTotalDigitalRevenueByDateRange(startDate: String, endDate: String): Double?
 
