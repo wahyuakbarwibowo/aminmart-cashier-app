@@ -16,6 +16,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-08-23
+
+### Added
+- Filter periode (Semua/Hari Ini/7 Hari/Bulan Ini/Kustom) di Pengeluaran, Riwayat Stok, dan Laporan
+- Total pengeluaran mengikuti periode yang dipilih
+- Pemisah ribuan otomatis di semua input nominal rupiah
+- Konfirmasi sebelum mengosongkan keranjang, dan aksi "Urungkan" saat item dihapus
+
+### Changed
+- Menu "Lainnya" dikelompokkan per kategori (Transaksi, Laporan, Data Master, Sistem)
+- Notifikasi di layar kasir memakai Snackbar, bukan Toast
+
+### Fixed
+- Ringkasan di layar Laporan sebelumnya hanya menjumlah 20 baris pertama sehingga omzet tampil lebih kecil dari sebenarnya
+
 ## [2.0.1] - 2026-07-05
 
 ### Fixed
