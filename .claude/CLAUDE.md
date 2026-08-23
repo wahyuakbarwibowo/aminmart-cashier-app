@@ -105,3 +105,13 @@ Single `NavHost` in `ui/navigation/`. All routes are flat (no nested graphs). Sc
 ## Language
 
 App UI and user-facing strings are in Indonesian. Code comments may also be in Indonesian.
+
+## Versioning Workflow
+
+Setiap perubahan kode yang di-commit **wajib** disertai bump versi di `app/build.gradle`:
+
+- `versionCode` selalu +1.
+- `versionName` (`MAJOR.MINOR.PATCH`): PATCH untuk bug fix, MINOR untuk fitur baru, MAJOR untuk perubahan besar/breaking.
+- Tambahkan entri di `CHANGELOG.md` di bawah heading versi baru (Added/Changed/Fixed), di atas versi sebelumnya.
+- Bump versi + changelog masuk **commit terpisah** (`chore: naikkan versi ke X.Y.Z`) setelah commit perubahan kodenya.
+- Dikecualikan: perubahan yang tidak menyentuh kode aplikasi (dokumentasi, `.gitignore`, konfigurasi tooling).

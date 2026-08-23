@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-08-23
+
+### Fixed
+- File backup `.json` tidak bisa dipilih saat impor karena filter MIME picker terlalu ketat
+
 ## [2.2.0] - 2026-08-23
 
 ### Added
