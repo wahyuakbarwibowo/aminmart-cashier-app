@@ -154,7 +154,9 @@ fun BackupScreen(
 
                     OutlinedButton(
                         onClick = {
-                            openDocumentLauncher.launch(arrayOf("application/json"))
+                            // ponytail: */* karena banyak file manager melaporkan .json sebagai
+                            // octet-stream/text-plain, sehingga file jadi tidak bisa dipilih
+                            openDocumentLauncher.launch(arrayOf("*/*"))
                         },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !uiState.isLoading
