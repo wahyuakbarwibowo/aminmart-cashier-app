@@ -7,50 +7,56 @@ import androidx.compose.ui.text.input.VisualTransformation
 
 /**
  * Menampilkan angka dengan pemisah ribuan (titik) di OutlinedTextField,
- * tanpa mengubah nilai mentah (tetap digit murni "100000").
+ * tanpa mengubah nilai mentah (tetap "100000").
  * Contoh: input "100000" tampil "100.000".
  *
- * Pakai bersama input yang hanya menerima digit (filter isDigit di onValueChange).
+ * [allowDecimal] untuk input yang nilainya bisa pecahan (mis. harga satuan
+ * hasil bagi harga paket): bagian di belakang titik desimal dibiarkan apa
+ * adanya, hanya bagian bulatnya yang diberi pemisah — "1666.6667" tampil
+ * "1.666,6667".
  */
-class RupiahVisualTransformation : VisualTransformation {
+class RupiahVisualTransformation(private val allowDecimal: Boolean = false) : VisualTransformation {
+
     override fun filter(text: AnnotatedString): TransformedText {
-        val digits = text.text
-        if (digits.isEmpty()) {
-            return TransformedText(text, OffsetMapping.Identity)
-        }
+        val raw = text.text
+        if (raw.isEmpty()) return TransformedText(text, OffsetMapping.Identity)
 
-        val formatted = StringBuilder()
-        val len = digits.length
-        for (i in 0 until len) {
-            formatted.append(digits[i])
-            val posFromEnd = len - i - 1
-            if (posFromEnd > 0 && posFromEnd % 3 == 0) {
-                formatted.append('.')
+        val dotIndex = if (allowDecimal) raw.indexOf('.') else -1
+        val intPart = if (dotIndex >= 0) raw.substring(0, dotIndex) else raw
+        val rest = if (dotIndex >= 0) raw.substring(dotIndex) else ""
+
+        val out = StringBuilder()
+        // originalToTransformed[i] = posisi karakter ke-i pada teks tampilan.
+        val forward = IntArray(raw.length + 1)
+        val intDigits = intPart.count { it.isDigit() }
+        var digitsSeen = 0
+        for (i in intPart.indices) {
+            forward[i] = out.length
+            out.append(intPart[i])
+            if (intPart[i].isDigit()) {
+                digitsSeen++
+                val remaining = intDigits - digitsSeen
+                if (remaining > 0 && remaining % 3 == 0) out.append('.')
             }
         }
-        val out = formatted.toString()
+        for (i in rest.indices) {
+            forward[intPart.length + i] = out.length
+            // Titik desimal ditampilkan sebagai koma agar tidak tertukar dengan pemisah ribuan.
+            out.append(if (i == 0 && rest[i] == '.') ',' else rest[i])
+        }
+        forward[raw.length] = out.length
 
-        // Jumlah pemisah yang disisipkan sebelum offset original tertentu.
-        val offsetMapping = object : OffsetMapping {
-            override fun originalToTransformed(offset: Int): Int {
-                if (offset <= 0) return 0
-                val digitsBefore = offset.coerceAtMost(len)
-                // separator dihitung dari posisi end: setiap kelipatan 3 digit dari kanan.
-                val separatorsBefore = (len - digitsBefore).let { remaining ->
-                    val totalSeparators = (len - 1) / 3
-                    val separatorsAfter = if (remaining > 0) (remaining - 1) / 3 + 1 else 0
-                    (totalSeparators - separatorsAfter).coerceAtLeast(0)
-                }
-                return (offset + separatorsBefore).coerceAtMost(out.length)
-            }
+        val mapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int =
+                forward[offset.coerceIn(0, raw.length)]
 
             override fun transformedToOriginal(offset: Int): Int {
-                if (offset <= 0) return 0
-                val sub = out.take(offset.coerceAtMost(out.length))
-                return sub.count { it.isDigit() }
+                val clamped = offset.coerceIn(0, out.length)
+                // Ambil offset asli terkecil yang memetakan ke posisi tampilan ini.
+                for (i in 0..raw.length) if (forward[i] >= clamped) return i
+                return raw.length
             }
         }
-
-        return TransformedText(AnnotatedString(out), offsetMapping)
+        return TransformedText(AnnotatedString(out.toString()), mapping)
     }
 }

@@ -25,9 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.wahyuakbarwibowo.aminmartkasir.ui.components.DateRangeFilterBar
 import com.wahyuakbarwibowo.aminmartkasir.ui.viewmodel.DigitalTransactionViewModel
-import com.wahyuakbarwibowo.aminmartkasir.ui.viewmodel.ExpenseViewModel
-import com.wahyuakbarwibowo.aminmartkasir.ui.viewmodel.SalesHistoryViewModel
+import com.wahyuakbarwibowo.aminmartkasir.ui.viewmodel.ProfitLossViewModel
 import com.wahyuakbarwibowo.aminmartkasir.utils.CurrencyUtils.formatCurrency
 import com.wahyuakbarwibowo.aminmartkasir.utils.ExcelExportUtils
 import kotlinx.coroutines.launch
@@ -38,24 +38,20 @@ fun ReportsScreen(
     onNavigateBack: () -> Unit,
     onOpenDrawer: () -> Unit,
     viewModelFactory: ViewModelProvider.Factory? = null,
-    salesHistoryViewModel: SalesHistoryViewModel = viewModel(factory = viewModelFactory),
-    expenseViewModel: ExpenseViewModel = viewModel(factory = viewModelFactory),
+    profitLossViewModel: ProfitLossViewModel = viewModel(factory = viewModelFactory),
     digitalTransactionViewModel: DigitalTransactionViewModel = viewModel(factory = viewModelFactory)
 ) {
-    val salesState by salesHistoryViewModel.uiState.collectAsStateWithLifecycle()
-    val expenseState by expenseViewModel.uiState.collectAsStateWithLifecycle()
+    val reportState by profitLossViewModel.uiState.collectAsStateWithLifecycle()
     val digitalState by digitalTransactionViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    val cashierRevenue = remember(salesState.sales) { salesState.sales.sumOf { it.total } }
-    val cashierCount = salesState.sales.size
-    val digitalRevenue = remember(digitalState.phoneHistory) { digitalState.phoneHistory.sumOf { it.sellingPrice } }
-    val digitalCount = digitalState.phoneHistory.size
-    val digitalProfit = remember(digitalState.phoneHistory) { digitalState.phoneHistory.sumOf { it.profit } }
-    val expenseTotal = remember(expenseState.expenses) { expenseState.expenses.sumOf { it.amount } }
-    val grossRevenue = cashierRevenue + digitalRevenue
-    val estimatedNet = grossRevenue - expenseTotal
+    val periodLabel = if (reportState.customStartDate.isNotBlank()) {
+        "periode dipilih"
+    } else {
+        reportState.selectedPeriod.label.lowercase()
+    }
+    val estimatedNet = reportState.estimatedCashFlow
 
     val recentDigital = remember(digitalState.phoneHistory) {
         digitalState.phoneHistory.sortedByDescending { it.createdAt.orEmpty() }.take(5)
@@ -74,11 +70,12 @@ fun ReportsScreen(
                 actions = {
                     IconButton(onClick = {
                         coroutineScope.launch {
+                            val export = profitLossViewModel.loadExportData()
                             val file = ExcelExportUtils.exportFullReport(
                                 context,
-                                salesState.sales,
-                                digitalState.phoneHistory,
-                                expenseState.expenses
+                                export.sales,
+                                export.digital,
+                                export.expenses
                             )
                             if (file != null) {
                                 ExcelExportUtils.shareFile(context, file)
@@ -91,7 +88,7 @@ fun ReportsScreen(
             )
         }
     ) { paddingValues ->
-        if (salesState.isLoading || expenseState.isLoading || digitalState.isLoading) {
+        if (reportState.isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -103,33 +100,38 @@ fun ReportsScreen(
             return@Scaffold
         }
 
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        DateRangeFilterBar(
+            startDate = reportState.customStartDate,
+            endDate = reportState.customEndDate,
+            onRangeChange = { start, end -> profitLossViewModel.setCustomRange(start, end) },
+            onClear = { profitLossViewModel.clearCustomRange() }
+        )
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier = Modifier.fillMaxWidth().weight(1f),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
                 SummaryStatCard(
                     title = "Omzet Kasir",
-                    value = formatCurrency(cashierRevenue),
-                    subtitle = "$cashierCount transaksi",
+                    value = formatCurrency(reportState.cashierRevenue),
+                    subtitle = "Penjualan $periodLabel",
                     icon = Icons.Default.PointOfSale
                 )
             }
             item {
                 SummaryStatCard(
                     title = "Omzet Digital",
-                    value = formatCurrency(digitalRevenue),
-                    subtitle = "$digitalCount transaksi digital",
+                    value = formatCurrency(reportState.digitalRevenue),
+                    subtitle = "Transaksi digital $periodLabel",
                     icon = Icons.Default.PhoneIphone
                 )
             }
             item {
                 SummaryStatCard(
                     title = "Laba Digital",
-                    value = formatCurrency(digitalProfit),
+                    value = formatCurrency(reportState.digitalProfit),
                     subtitle = "Dari margin produk digital",
                     icon = Icons.Default.Assessment
                 )
@@ -137,8 +139,8 @@ fun ReportsScreen(
             item {
                 SummaryStatCard(
                     title = "Total Pengeluaran",
-                    value = formatCurrency(expenseTotal),
-                    subtitle = "${expenseState.expenses.size} catatan",
+                    value = formatCurrency(reportState.totalExpense),
+                    subtitle = "Pengeluaran $periodLabel",
                     icon = Icons.Default.AttachMoney
                 )
             }
@@ -199,6 +201,7 @@ fun ReportsScreen(
                     }
                 }
             }
+        }
         }
     }
 }

@@ -20,6 +20,9 @@ enum class ProfitLossPeriod(val label: String) {
 
 data class ProfitLossUiState(
     val selectedPeriod: ProfitLossPeriod = ProfitLossPeriod.THIS_MONTH,
+    /** Rentang kustom "yyyy-MM-dd"; kalau terisi, ini yang dipakai, bukan selectedPeriod. */
+    val customStartDate: String = "",
+    val customEndDate: String = "",
     val cashierRevenue: Double = 0.0,
     val cashierProfit: Double = 0.0,
     val digitalRevenue: Double = 0.0,
@@ -30,6 +33,12 @@ data class ProfitLossUiState(
     val expenseByCategory: List<CategoryExpenseDto> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null
+)
+
+data class ExportData(
+    val sales: List<com.wahyuakbarwibowo.aminmartkasir.data.local.entity.SaleEntity>,
+    val digital: List<com.wahyuakbarwibowo.aminmartkasir.data.local.entity.PhoneHistoryEntity>,
+    val expenses: List<com.wahyuakbarwibowo.aminmartkasir.data.local.entity.ExpenseEntity>
 )
 
 class ProfitLossViewModel(
@@ -46,15 +55,53 @@ class ProfitLossViewModel(
     }
 
     fun setPeriod(period: ProfitLossPeriod) {
-        _uiState.update { it.copy(selectedPeriod = period) }
+        _uiState.update { it.copy(selectedPeriod = period, customStartDate = "", customEndDate = "") }
         loadData()
+    }
+
+    fun setCustomRange(startDate: String, endDate: String) {
+        _uiState.update { it.copy(customStartDate = startDate, customEndDate = endDate) }
+        loadData()
+    }
+
+    fun clearCustomRange() {
+        _uiState.update { it.copy(customStartDate = "", customEndDate = "", selectedPeriod = ProfitLossPeriod.ALL_TIME) }
+        loadData()
+    }
+
+    /** Batas periode aktif, atau null untuk sepanjang waktu. */
+    private fun activeRange(state: ProfitLossUiState): Pair<String, String>? {
+        if (state.customStartDate.isNotBlank() && state.customEndDate.isNotBlank()) {
+            return DateUtils.startOfDay(state.customStartDate) to DateUtils.endOfDay(state.customEndDate)
+        }
+        return when (state.selectedPeriod) {
+            ProfitLossPeriod.TODAY -> DateUtils.startOfDay(DateUtils.nowDate()) to DateUtils.endOfDay(DateUtils.nowDate())
+            ProfitLossPeriod.THIS_MONTH ->
+                DateUtils.startOfDay(DateUtils.nowMonth() + "-01") to DateUtils.endOfDay(DateUtils.nowMonth() + "-31")
+            ProfitLossPeriod.ALL_TIME -> null
+        }
+    }
+
+    /**
+     * Data mentah untuk ekspor Excel, mengikuti periode yang sedang aktif.
+     * Dipakai Laporan supaya isi file sama dengan angka di layar.
+     */
+    suspend fun loadExportData(): ExportData {
+        val range = activeRange(_uiState.value)
+        val from = range?.first ?: "0000-01-01 00:00:00"
+        val to = range?.second ?: "9999-12-31 23:59:59"
+        return ExportData(
+            sales = saleRepository.getSalesByDateRange(from, to),
+            digital = phoneHistoryRepository.getPhoneHistoryByRange(from, to),
+            expenses = expenseRepository.getExpensesByDateRange(from, to, Int.MAX_VALUE, 0)
+        )
     }
 
     fun loadData() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                val period = _uiState.value.selectedPeriod
+                val range = activeRange(_uiState.value)
                 val cashierRev: Double
                 val cashierProf: Double
                 val digRev: Double
@@ -62,37 +109,21 @@ class ProfitLossViewModel(
                 val expTot: Double
                 val expCat: List<CategoryExpenseDto>
 
-                when (period) {
-                    ProfitLossPeriod.TODAY -> {
-                        val todayStart = DateUtils.nowDate() + " 00:00:00"
-                        val todayEnd = DateUtils.nowDate() + " 23:59:59"
-                        
-                        cashierRev = saleRepository.getTotalSalesByDateRange(todayStart, todayEnd)
-                        cashierProf = saleRepository.getTotalProfitByDateRange(todayStart, todayEnd)
-                        digRev = phoneHistoryRepository.getTotalDigitalRevenueByDateRange(todayStart, todayEnd)
-                        digProf = phoneHistoryRepository.getTotalDigitalProfitByDateRange(todayStart, todayEnd)
-                        expTot = expenseRepository.getTotalExpensesByDateRange(todayStart, todayEnd)
-                        expCat = expenseRepository.getExpensesByCategoryByDateRange(todayStart, todayEnd)
-                    }
-                    ProfitLossPeriod.THIS_MONTH -> {
-                        val monthStart = DateUtils.nowMonth() + "-01 00:00:00"
-                        val monthEnd = DateUtils.nowMonth() + "-31 23:59:59"
-                        
-                        cashierRev = saleRepository.getTotalSalesByDateRange(monthStart, monthEnd)
-                        cashierProf = saleRepository.getTotalProfitByDateRange(monthStart, monthEnd)
-                        digRev = phoneHistoryRepository.getTotalDigitalRevenueByDateRange(monthStart, monthEnd)
-                        digProf = phoneHistoryRepository.getTotalDigitalProfitByDateRange(monthStart, monthEnd)
-                        expTot = expenseRepository.getTotalExpensesByDateRange(monthStart, monthEnd)
-                        expCat = expenseRepository.getExpensesByCategoryByDateRange(monthStart, monthEnd)
-                    }
-                    ProfitLossPeriod.ALL_TIME -> {
-                        cashierRev = saleRepository.getTotalSalesAllTime()
-                        cashierProf = saleRepository.getTotalProfitAllTime()
-                        digRev = phoneHistoryRepository.getTotalDigitalRevenueAllTime()
-                        digProf = phoneHistoryRepository.getTotalDigitalProfitAllTime()
-                        expTot = expenseRepository.getTotalExpensesAllTime()
-                        expCat = expenseRepository.getExpensesByCategoryAllTime()
-                    }
+                if (range != null) {
+                    val (from, to) = range
+                    cashierRev = saleRepository.getTotalSalesByDateRange(from, to)
+                    cashierProf = saleRepository.getTotalProfitByDateRange(from, to)
+                    digRev = phoneHistoryRepository.getTotalDigitalRevenueByDateRange(from, to)
+                    digProf = phoneHistoryRepository.getTotalDigitalProfitByDateRange(from, to)
+                    expTot = expenseRepository.getTotalExpensesByDateRange(from, to)
+                    expCat = expenseRepository.getExpensesByCategoryByDateRange(from, to)
+                } else {
+                    cashierRev = saleRepository.getTotalSalesAllTime()
+                    cashierProf = saleRepository.getTotalProfitAllTime()
+                    digRev = phoneHistoryRepository.getTotalDigitalRevenueAllTime()
+                    digProf = phoneHistoryRepository.getTotalDigitalProfitAllTime()
+                    expTot = expenseRepository.getTotalExpensesAllTime()
+                    expCat = expenseRepository.getExpensesByCategoryAllTime()
                 }
 
                 val cashFlow = cashierRev + digRev - expTot

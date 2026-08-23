@@ -58,6 +58,10 @@ class SaleRepository(
         return saleDao.getSalesSince(startDate)
     }
 
+    suspend fun getSalesByDateRange(startDate: String, endDate: String): List<SaleEntity> {
+        return saleDao.getSalesByDateRange(startDate, endDate)
+    }
+
     suspend fun searchSales(query: String, limit: Int = 20): List<SaleEntity> {
         return saleDao.searchSales(query, limit)
     }

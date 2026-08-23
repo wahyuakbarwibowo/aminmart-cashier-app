@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.wahyuakbarwibowo.aminmartkasir.data.local.entity.StockHistoryEntity
+import com.wahyuakbarwibowo.aminmartkasir.ui.components.DateRangeFilterBar
 import com.wahyuakbarwibowo.aminmartkasir.ui.viewmodel.StockHistoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,12 +61,19 @@ fun StockHistoryScreen(
             )
         }
     ) { paddingValues ->
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        DateRangeFilterBar(
+            startDate = uiState.startDate,
+            endDate = uiState.endDate,
+            onRangeChange = { start, end -> viewModel.setDateRange(start, end) },
+            onClear = { viewModel.clearDateFilter() }
+        )
         PullToRefreshBox(
             isRefreshing = uiState.isRefreshing,
             onRefresh = { viewModel.refreshData() },
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+                .fillMaxWidth()
+                .weight(1f)
         ) {
             if (uiState.isLoading && !uiState.isRefreshing) {
                 Box(
@@ -91,7 +99,7 @@ fun StockHistoryScreen(
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text("Belum ada riwayat stok")
+                        Text(if (uiState.startDate.isBlank()) "Belum ada riwayat stok" else "Tidak ada riwayat stok pada periode ini")
                     }
                 }
             } else {
@@ -119,6 +127,7 @@ fun StockHistoryScreen(
                     }
                 }
             }
+        }
         }
     }
 }

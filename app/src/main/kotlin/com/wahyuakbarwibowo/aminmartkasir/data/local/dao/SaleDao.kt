@@ -36,6 +36,9 @@ interface SaleDao {
     @Query("SELECT * FROM sales WHERE createdAt >= :startDate ORDER BY id DESC")
     suspend fun getSalesSince(startDate: String): List<SaleEntity>
 
+    @Query("SELECT * FROM sales WHERE createdAt >= :startDate AND createdAt <= :endDate ORDER BY id DESC")
+    suspend fun getSalesByDateRange(startDate: String, endDate: String): List<SaleEntity>
+
     @Query("SELECT * FROM sales WHERE CAST(id AS TEXT) LIKE '%' || :query || '%' OR createdAt LIKE '%' || :query || '%' ORDER BY id DESC LIMIT :limit")
     suspend fun searchSales(query: String, limit: Int = 20): List<SaleEntity>
 

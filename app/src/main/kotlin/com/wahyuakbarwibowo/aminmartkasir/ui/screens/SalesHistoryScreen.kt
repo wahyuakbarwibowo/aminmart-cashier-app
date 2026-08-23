@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.wahyuakbarwibowo.aminmartkasir.ui.components.DateRangeFilterBar
 import com.wahyuakbarwibowo.aminmartkasir.ui.viewmodel.SalesHistoryViewModel
 import com.wahyuakbarwibowo.aminmartkasir.utils.CurrencyUtils.formatCurrency
 import com.wahyuakbarwibowo.aminmartkasir.utils.DateUtils
@@ -40,22 +41,7 @@ fun SalesHistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val dateFormat = remember { SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("id", "ID")) }
-    val filterDateFormat = remember { SimpleDateFormat("dd MMM yyyy", Locale("id", "ID")) }
-    val apiDateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
     val listState = rememberLazyListState()
-    var showDateRangePicker by remember { mutableStateOf(false) }
-
-    fun applyPresetRange(daysAgo: Int) {
-        val end = Calendar.getInstance()
-        val start = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -daysAgo) }
-        viewModel.loadSalesByDateRange(apiDateFormat.format(start.time), apiDateFormat.format(end.time))
-    }
-
-    fun applyThisMonth() {
-        val end = Calendar.getInstance()
-        val start = Calendar.getInstance().apply { set(Calendar.DAY_OF_MONTH, 1) }
-        viewModel.loadSalesByDateRange(apiDateFormat.format(start.time), apiDateFormat.format(end.time))
-    }
 
     // Detect when scrolled to bottom for infinite scroll
     val shouldLoadMore = remember {
@@ -91,63 +77,12 @@ fun SalesHistoryScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                FilterChip(
-                    selected = uiState.startDate.isBlank(),
-                    onClick = { viewModel.clearDateFilter() },
-                    label = { Text("Semua") }
-                )
-                FilterChip(
-                    selected = false,
-                    onClick = { applyPresetRange(0) },
-                    label = { Text("Hari Ini") }
-                )
-                FilterChip(
-                    selected = false,
-                    onClick = { applyPresetRange(7) },
-                    label = { Text("7 Hari") }
-                )
-                FilterChip(
-                    selected = false,
-                    onClick = { applyThisMonth() },
-                    label = { Text("Bulan Ini") }
-                )
-                if (uiState.startDate.isNotBlank() && uiState.endDate.isNotBlank()) {
-                    InputChip(
-                        selected = true,
-                        onClick = { showDateRangePicker = true },
-                        label = {
-                            Text(
-                                "${filterDateFormat.format(apiDateFormat.parse(uiState.startDate)!!)} - " +
-                                    filterDateFormat.format(apiDateFormat.parse(uiState.endDate)!!)
-                            )
-                        },
-                        trailingIcon = {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = "Hapus filter",
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .clickable { viewModel.clearDateFilter() }
-                            )
-                        }
-                    )
-                } else {
-                    FilterChip(
-                        selected = false,
-                        onClick = { showDateRangePicker = true },
-                        label = { Text("Kustom") },
-                        leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                    )
-                }
-            }
+            DateRangeFilterBar(
+                startDate = uiState.startDate,
+                endDate = uiState.endDate,
+                onRangeChange = { start, end -> viewModel.loadSalesByDateRange(start, end) },
+                onClear = { viewModel.clearDateFilter() }
+            )
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = { viewModel.refreshData() },
@@ -213,41 +148,6 @@ fun SalesHistoryScreen(
                 }
             }
             }
-        }
-    }
-
-    if (showDateRangePicker) {
-        val rangePickerState = rememberDateRangePickerState()
-        DatePickerDialog(
-            onDismissRequest = { showDateRangePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val startMillis = rangePickerState.selectedStartDateMillis
-                        val endMillis = rangePickerState.selectedEndDateMillis
-                        if (startMillis != null && endMillis != null) {
-                            val utcFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
-                                timeZone = TimeZone.getTimeZone("UTC")
-                            }
-                            viewModel.loadSalesByDateRange(
-                                utcFormat.format(Date(startMillis)),
-                                utcFormat.format(Date(endMillis))
-                            )
-                        }
-                        showDateRangePicker = false
-                    },
-                    enabled = rangePickerState.selectedStartDateMillis != null && rangePickerState.selectedEndDateMillis != null
-                ) {
-                    Text("Terapkan")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDateRangePicker = false }) {
-                    Text("Batal")
-                }
-            }
-        ) {
-            DateRangePicker(state = rangePickerState, modifier = Modifier.weight(1f))
         }
     }
 }

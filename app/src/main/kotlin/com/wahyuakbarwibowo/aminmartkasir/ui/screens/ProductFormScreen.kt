@@ -33,6 +33,7 @@ import com.journeyapps.barcodescanner.ScanOptions
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.*
+import com.wahyuakbarwibowo.aminmartkasir.utils.RupiahVisualTransformation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -311,7 +312,8 @@ fun ProductFormScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-                leadingIcon = { Text("Rp") }
+                leadingIcon = { Text("Rp") },
+                visualTransformation = RupiahVisualTransformation(allowDecimal = true)
             )
             
             Row(
@@ -335,7 +337,8 @@ fun ProductFormScreen(
                         .defaultMinSize(minHeight = 56.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-                    leadingIcon = { Text("Rp") }
+                    leadingIcon = { Text("Rp") },
+                    visualTransformation = RupiahVisualTransformation(allowDecimal = true)
                 )
 
                 OutlinedTextField(
@@ -373,7 +376,8 @@ fun ProductFormScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-                leadingIcon = { Text("Rp") }
+                leadingIcon = { Text("Rp") },
+                visualTransformation = RupiahVisualTransformation(allowDecimal = true)
             )
             
             Row(
@@ -397,7 +401,8 @@ fun ProductFormScreen(
                         .defaultMinSize(minHeight = 56.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-                    leadingIcon = { Text("Rp") }
+                    leadingIcon = { Text("Rp") },
+                    visualTransformation = RupiahVisualTransformation(allowDecimal = true)
                 )
 
                 OutlinedTextField(
@@ -471,8 +476,22 @@ private fun VariantFormDialog(
                 OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nama Varian") })
                 OutlinedTextField(value = sku, onValueChange = { sku = it }, label = { Text("SKU") })
                 OutlinedTextField(value = barcode, onValueChange = { barcode = it }, label = { Text("Barcode") })
-                OutlinedTextField(value = purchasePrice, onValueChange = { purchasePrice = it.filter { ch -> ch.isDigit() } }, label = { Text("Harga Modal") })
-                OutlinedTextField(value = sellingPrice, onValueChange = { sellingPrice = it.filter { ch -> ch.isDigit() } }, label = { Text("Harga Jual") })
+                OutlinedTextField(
+                    value = purchasePrice,
+                    onValueChange = { purchasePrice = it.filter { ch -> ch.isDigit() } },
+                    label = { Text("Harga Modal") },
+                    prefix = { Text("Rp ") },
+                    visualTransformation = RupiahVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                )
+                OutlinedTextField(
+                    value = sellingPrice,
+                    onValueChange = { sellingPrice = it.filter { ch -> ch.isDigit() } },
+                    label = { Text("Harga Jual") },
+                    prefix = { Text("Rp ") },
+                    visualTransformation = RupiahVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                )
                 OutlinedTextField(value = stock, onValueChange = { stock = it.filter { ch -> ch.isDigit() } }, label = { Text("Stok") })
             }
         },

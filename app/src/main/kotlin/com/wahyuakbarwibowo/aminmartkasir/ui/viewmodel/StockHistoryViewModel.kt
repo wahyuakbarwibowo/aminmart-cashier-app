@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyuakbarwibowo.aminmartkasir.data.local.entity.StockHistoryEntity
 import com.wahyuakbarwibowo.aminmartkasir.data.repository.StockHistoryRepository
+import com.wahyuakbarwibowo.aminmartkasir.utils.DateUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -14,6 +15,8 @@ data class StockHistoryUiState(
     val isRefreshing: Boolean = false,
     val isLoadMoreLoading: Boolean = false,
     val canLoadMore: Boolean = true,
+    val startDate: String = "",
+    val endDate: String = "",
     val error: String? = null
 )
 
@@ -32,13 +35,37 @@ class StockHistoryViewModel(
         loadInitialData()
     }
 
+    fun setDateRange(startDate: String, endDate: String) {
+        _uiState.update { it.copy(startDate = startDate, endDate = endDate) }
+        loadInitialData()
+    }
+
+    fun clearDateFilter() {
+        _uiState.update { it.copy(startDate = "", endDate = "") }
+        loadInitialData()
+    }
+
+    private suspend fun fetchPage(offset: Int): List<StockHistoryEntity> {
+        val state = _uiState.value
+        return if (state.startDate.isBlank() || state.endDate.isBlank()) {
+            stockHistoryRepository.getStockHistory(pageSize, offset)
+        } else {
+            stockHistoryRepository.getStockHistoryByDateRange(
+                DateUtils.startOfDay(state.startDate),
+                DateUtils.endOfDay(state.endDate),
+                pageSize,
+                offset
+            )
+        }
+    }
+
     private fun loadInitialData() {
         currentPage = 0
         isLastPage = false
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true, history = emptyList(), canLoadMore = true) }
             try {
-                val initialHistory = stockHistoryRepository.getStockHistory(pageSize, 0)
+                val initialHistory = fetchPage(0)
                 if (initialHistory.size < pageSize) {
                     isLastPage = true
                 }
@@ -63,7 +90,7 @@ class StockHistoryViewModel(
             _uiState.update { it.copy(isLoadMoreLoading = true) }
             try {
                 val offset = currentPage * pageSize
-                val newHistory = stockHistoryRepository.getStockHistory(pageSize, offset)
+                val newHistory = fetchPage(offset)
                 
                 if (newHistory.size < pageSize) {
                     isLastPage = true

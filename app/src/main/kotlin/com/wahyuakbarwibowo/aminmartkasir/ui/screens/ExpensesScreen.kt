@@ -25,6 +25,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.wahyuakbarwibowo.aminmartkasir.data.local.entity.ExpenseEntity
 import com.wahyuakbarwibowo.aminmartkasir.ui.viewmodel.ExpenseViewModel
 import com.wahyuakbarwibowo.aminmartkasir.utils.CurrencyUtils.formatCurrency
+import com.wahyuakbarwibowo.aminmartkasir.ui.components.DateRangeFilterBar
+import com.wahyuakbarwibowo.aminmartkasir.utils.RupiahVisualTransformation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,6 +80,12 @@ fun ExpensesScreen(
                 .padding(paddingValues)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
+                DateRangeFilterBar(
+                    startDate = uiState.startDate,
+                    endDate = uiState.endDate,
+                    onRangeChange = { start, end -> viewModel.setDateRange(start, end) },
+                    onClear = { viewModel.clearDateFilter() }
+                )
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -88,7 +96,7 @@ fun ExpensesScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            "Total Pengeluaran",
+                            if (uiState.startDate.isBlank()) "Total Pengeluaran" else "Total Pengeluaran (periode dipilih)",
                             style = MaterialTheme.typography.titleSmall
                         )
                         Text(
@@ -109,7 +117,7 @@ fun ExpensesScreen(
                         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Belum ada pengeluaran")
+                        Text(if (uiState.startDate.isBlank()) "Belum ada pengeluaran" else "Tidak ada pengeluaran pada periode ini")
                     }
                 } else {
                     LazyColumn(
@@ -259,6 +267,7 @@ fun AddExpenseDialog(
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     prefix = { Text("Rp ") },
+                    visualTransformation = RupiahVisualTransformation(),
                     singleLine = true
                 )
                 OutlinedTextField(

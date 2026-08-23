@@ -11,6 +11,15 @@ class ExpenseRepository(private val expenseDao: ExpenseDao) {
         return expenseDao.getExpenses(limit, offset)
     }
 
+    suspend fun getExpensesByDateRange(
+        startDateTime: String,
+        endDateTime: String,
+        limit: Int,
+        offset: Int
+    ): List<ExpenseEntity> {
+        return expenseDao.getExpensesByDateRange(startDateTime, endDateTime, limit, offset)
+    }
+
     suspend fun getTotalExpensesByDateRange(startDate: String, endDate: String): Double {
         return expenseDao.getTotalExpensesByDateRange(startDate, endDate) ?: 0.0
     }

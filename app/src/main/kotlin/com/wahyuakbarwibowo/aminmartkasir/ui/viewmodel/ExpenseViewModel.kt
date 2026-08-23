@@ -17,6 +17,8 @@ data class ExpenseUiState(
     val isRefreshing: Boolean = false,
     val isLoadMoreLoading: Boolean = false,
     val canLoadMore: Boolean = true,
+    val startDate: String = "",
+    val endDate: String = "",
     val error: String? = null
 )
 
@@ -35,14 +37,47 @@ class ExpenseViewModel(
         loadInitialExpenses()
     }
 
+    fun setDateRange(startDate: String, endDate: String) {
+        _uiState.update { it.copy(startDate = startDate, endDate = endDate) }
+        loadInitialExpenses()
+    }
+
+    fun clearDateFilter() {
+        _uiState.update { it.copy(startDate = "", endDate = "") }
+        loadInitialExpenses()
+    }
+
+    private suspend fun fetchPage(offset: Int): List<ExpenseEntity> {
+        val state = _uiState.value
+        return if (state.startDate.isBlank() || state.endDate.isBlank()) {
+            expenseRepository.getExpenses(pageSize, offset)
+        } else {
+            expenseRepository.getExpensesByDateRange(
+                DateUtils.startOfDay(state.startDate),
+                DateUtils.endOfDay(state.endDate),
+                pageSize,
+                offset
+            )
+        }
+    }
+
     private fun loadInitialExpenses() {
         currentPage = 0
         isLastPage = false
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true, expenses = emptyList(), canLoadMore = true) }
             try {
-                val initialExpenses = expenseRepository.getExpenses(pageSize, 0)
-                val total = expenseRepository.getTotalExpensesAllTime()
+                val initialExpenses = fetchPage(0)
+                val state = _uiState.value
+                // Total mengikuti periode yang sedang dipilih.
+                val total = if (state.startDate.isBlank() || state.endDate.isBlank()) {
+                    expenseRepository.getTotalExpensesAllTime()
+                } else {
+                    expenseRepository.getTotalExpensesByDateRange(
+                        DateUtils.startOfDay(state.startDate),
+                        DateUtils.endOfDay(state.endDate)
+                    )
+                }
                 
                 if (initialExpenses.size < pageSize) {
                     isLastPage = true
@@ -71,7 +106,7 @@ class ExpenseViewModel(
             _uiState.update { it.copy(isLoadMoreLoading = true) }
             try {
                 val offset = currentPage * pageSize
-                val newExpenses = expenseRepository.getExpenses(pageSize, offset)
+                val newExpenses = fetchPage(offset)
                 
                 if (newExpenses.size < pageSize) {
                     isLastPage = true

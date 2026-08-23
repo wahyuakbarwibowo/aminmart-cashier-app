@@ -11,6 +11,15 @@ class StockHistoryRepository(private val stockHistoryDao: StockHistoryDao) {
         return stockHistoryDao.getStockHistory(limit, offset)
     }
 
+    suspend fun getStockHistoryByDateRange(
+        startDateTime: String,
+        endDateTime: String,
+        limit: Int,
+        offset: Int
+    ): List<StockHistoryEntity> {
+        return stockHistoryDao.getStockHistoryByDateRange(startDateTime, endDateTime, limit, offset)
+    }
+
     fun getStockHistoryByProduct(productId: Long): Flow<List<StockHistoryEntity>> {
         return stockHistoryDao.getStockHistoryByProduct(productId)
     }
