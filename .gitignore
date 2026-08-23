@@ -45,3 +45,5 @@ app/release/
 *.log
 
 .antigravity
+# Kotlin compiler session cache
+.kotlin/
