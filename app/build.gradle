@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.3.10'
     id 'com.google.devtools.ksp' version '2.3.5'
     id 'org.jetbrains.kotlin.plugin.compose' version '2.3.10'
 }
@@ -22,6 +23,12 @@ if (hasReleaseSigning) {
     signingPropertiesFile.withInputStream { signingProperties.load(it) }
 }
 
+def supabaseProps = new Properties()
+def supabasePropsFile = rootProject.file("supabase.properties")
+if (supabasePropsFile.exists()) {
+    supabasePropsFile.withInputStream { supabaseProps.load(it) }
+}
+
 android {
     namespace = 'com.wahyuakbarwibowo.aminmartkasir'
     compileSdk = 35
@@ -32,6 +39,10 @@ android {
         targetSdk = 35
         versionCode = 7
         versionName = "2.2.1"
+
+        // Kredensial Supabase di-inject dari supabase.properties (gitignored).
+        buildConfigField "String", "SUPABASE_URL", "\"${supabaseProps.getProperty('SUPABASE_URL', '')}\""
+        buildConfigField "String", "SUPABASE_ANON_KEY", "\"${supabaseProps.getProperty('SUPABASE_ANON_KEY', '')}\""
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -121,6 +132,15 @@ dependencies {
 
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1'
+
+    // Supabase (auth + database)
+    implementation platform('io.github.jan-tennert.supabase:bom:3.7.0')
+    implementation('io.github.jan-tennert.supabase:auth-kt') {
+        // Hanya dipakai untuk OAuth/SSO; butuh compileSdk 36. Email/password tidak memerlukannya.
+        exclude group: 'androidx.browser', module: 'browser'
+    }
+    implementation 'io.github.jan-tennert.supabase:postgrest-kt'
+    implementation 'io.ktor:ktor-client-android:3.2.0'
 
     // Barcode scanner
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
