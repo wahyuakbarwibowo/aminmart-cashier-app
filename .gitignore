@@ -35,6 +35,16 @@ firebase-app.json
 **/api_keys.xml
 **/google_maps_api_key.xml
 
+# Supabase / SaaS v2 secrets
+supabase.properties
+admin-web/.env
+admin-web/.env.local
+admin-web/.env*.local
+.vercel/
+node_modules/
+.next/
+.svelte-kit/
+
 # Debug keystore (safe to commit if needed, but better ignore)
 debug.keystore
 
