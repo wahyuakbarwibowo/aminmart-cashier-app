@@ -1,12 +1,16 @@
 # 🛒 Aminmart Cashier (Retail & PPOB)
 
-**Versi:** 2.1.0
+**Versi:** 3.0.0
 
 **Aminmart Cashier** adalah aplikasi Point of Sales (POS) berbasis **Kotlin** & **Jetpack Compose** yang intuitif, cepat, dan modern. Dirancang khusus untuk memenuhi kebutuhan toko retail, minimarket, serta agen pulsa & PPOB dalam satu platform yang terintegrasi.
+
+Sejak v3.0.0 aplikasi berjalan sebagai **SaaS multi-tenant**: pengguna login via **Supabase Auth**, data tersimpan lokal (Room) untuk kecepatan & ketahanan offline, dan manajemen pengguna/toko dilakukan lewat **Web Admin** (SvelteKit) yang dapat di-deploy ke Vercel.
 
 ---
 
 ### ✨ Fitur Utama
+*   **🔐 Login & Multi-Role**: Autentikasi email/password via Supabase dengan role `super_admin` (pemilik), `admin` (pemilik toko), dan `kasir`; sesi tetap aktif antar buka aplikasi.
+*   **🌐 Web Admin Dashboard**: Kelola pengguna (buat user, ubah role, nonaktifkan/hapus) dan kelola toko dari browser — siap deploy ke Vercel.
 *   **Retail POS**: Manajemen stok barang, barcode scanner (via kamera), transaksi kasir kilat.
 *   **PPOB & Layanan Digital**: Transaksi Pulsa, PLN, E-Wallet, BPJS, Transfer Bank, dan Game.
 *   **📉 Laporan Laba Rugi (Profit & Loss)**: Analisis keuntungan bersih yang sudah terintegrasi dengan omset penjualan, HPP, pengeluaran, serta pantauan saldo **Hutang & Piutang**.
@@ -34,12 +38,14 @@
 ## 🛠️ Tech Stack
 *   **Language**: Kotlin 2.3.10
 *   **UI Toolkit**: Jetpack Compose (Compose BOM 2025.01.00), Material3 1.3.1
-*   **Database**: Room 2.8.4 (SQLite)
+*   **Database**: Room 2.8.4 (SQLite) + Supabase Postgres (auth & profil)
+*   **Auth/Backend**: supabase-kt 3.7.0 (`auth-kt`, `postgrest-kt`) + Ktor Client
 *   **Architecture**: MVVM
 *   **Async**: Kotlin Coroutines 1.10.1
 *   **Navigation**: Navigation Compose 2.8.5
 *   **Printing**: Android Bluetooth API (58mm Thermal Printer)
 *   **Annotation Processing**: KSP 2.3.5
+*   **Web Admin**: SvelteKit (Svelte 5) + Tailwind CSS v4 + @supabase/supabase-js, deploy via @sveltejs/adapter-vercel
 
 ---
 
@@ -61,7 +67,23 @@ cd cashier
 
 ---
 
-### 2. Build & Run via Android Studio
+### 2. Konfigurasi Supabase (Wajib sejak v3.0.0)
+
+Aplikasi meminta login saat pertama dibuka, jadi backend Supabase perlu disiapkan:
+
+1. Buat project Supabase dan jalankan `supabase/migrations/0001_init.sql`
+2. Salin template secret lalu isi URL & anon key:
+   ```bash
+   cp supabase.properties.example supabase.properties
+   ```
+3. Panduan lengkap (termasuk menjadikan akun Anda super admin dan deploy
+   web admin ke Vercel): lihat [`docs/setup-supabase.md`](docs/setup-supabase.md)
+
+> File `supabase.properties` tidak ikut di-commit (gitignored).
+
+---
+
+### 3. Build & Run via Android Studio
 
 1.  Buka **Android Studio** → **Open Project** → Pilih folder project
 2.  Tunggu Gradle sync selesai
@@ -70,7 +92,7 @@ cd cashier
 
 ---
 
-### 3. Build & Run via Command Line (Makefile)
+### 4. Build & Run via Command Line (Makefile)
 
 Project ini dilengkapi dengan **Makefile** untuk streamline development workflow:
 
@@ -246,11 +268,19 @@ Sistem digital menggunakan tabel dinamis:
 
 ---
 
-## ☁️ Roadmap: Sync Online (Supabase)
-Aplikasi ini **fully offline** (Room/SQLite lokal per-device). Ada rencana
-draft untuk sync antar device/toko via Supabase — belum dikerjakan, lihat:
-*   [`docs/SUPABASE_MIGRATION.md`](docs/SUPABASE_MIGRATION.md) — rencana, trade-off, dan estimasi biaya.
-*   [`docs/supabase_schema.sql`](docs/supabase_schema.sql) — skema Postgres + RLS per-toko.
+## ☁️ Supabase & Web Admin
+Sejak v3.0.0 fondasi SaaS sudah aktif:
+*   **Auth**: login aplikasi via Supabase Auth dengan role `super_admin` / `admin` / `kasir`.
+*   **Web Admin** (`admin-web/`): dashboard SvelteKit untuk kelola user & toko,
+    deploy ke Vercel. Menjalankan lokal:
+    ```bash
+    cd admin-web
+    cp .env.example .env.local   # isi nilai asli dari Supabase
+    npm install && npm run dev
+    ```
+*   **Setup lengkap**: [`docs/setup-supabase.md`](docs/setup-supabase.md)
+*   **Roadmap berikutnya**: sinkronisasi data transaksi/produk Room ↔ Supabase
+    (rencana awal di [`docs/SUPABASE_MIGRATION.md`](docs/SUPABASE_MIGRATION.md)).
 
 ---
 
@@ -262,12 +292,15 @@ app-cashier/
 │   │   └── main/
 │   │       ├── kotlin/com/wahyuakbarwibowo/aminmartkasir/
 │   │       │   ├── ui/          # Compose screens, viewmodels, components, navigation
-│   │       │   ├── data/        # Room entities, DAOs & repositories
+│   │       │   ├── data/        # Room entities, DAOs & repositories + data/remote (Supabase)
 │   │       │   ├── utils/       # Printer, currency, Excel export helpers
 │   │       │   ├── MainApplication.kt
 │   │       │   └── MainActivity.kt
 │   │       └── res/             # Resources (strings, themes, etc.)
 │   └── build.gradle
+├── admin-web/                   # Dashboard web admin (SvelteKit, deploy Vercel)
+├── supabase/                    # Migrasi SQL & skrip setup Supabase
+├── docs/                        # Dokumentasi (setup Supabase, dsb.)
 ├── build.gradle
 ├── settings.gradle
 └── Makefile
