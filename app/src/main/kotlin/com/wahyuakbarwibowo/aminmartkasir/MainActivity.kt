@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.navigation.compose.rememberNavController
 import com.wahyuakbarwibowo.aminmartkasir.data.local.AppDatabase
+import com.wahyuakbarwibowo.aminmartkasir.data.remote.AuthManager
+import com.wahyuakbarwibowo.aminmartkasir.ui.LoginGate
 import com.wahyuakbarwibowo.aminmartkasir.ui.MainAppContainer
 import com.wahyuakbarwibowo.aminmartkasir.ui.theme.AminmartKasirTheme
 
@@ -23,6 +23,7 @@ class MainActivity : ComponentActivity() {
 
         // Initialize database
         database = AppDatabase.getDatabase(applicationContext)
+        AuthManager.init(applicationContext)
 
         enableEdgeToEdge()
         setContent {
@@ -31,8 +32,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val viewModelFactory = AppDatabase.getViewModelFactory(applicationContext)
-                    MainAppContainer(viewModelFactory = viewModelFactory)
+                    LoginGate(
+                        onSignedIn = {
+                            val viewModelFactory =
+                                AppDatabase.getViewModelFactory(applicationContext)
+                            MainAppContainer(viewModelFactory = viewModelFactory)
+                        }
+                    )
                 }
             }
         }
