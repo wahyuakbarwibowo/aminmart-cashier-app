@@ -57,3 +57,6 @@ app/release/
 .antigravity
 # Kotlin compiler session cache
 .kotlin/
+
+# Supabase CLI local cache
+supabase/.temp/
