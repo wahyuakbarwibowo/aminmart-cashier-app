@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hapus Akun - Aminmart Cashier</title>
+    <meta name="description" content="Prosedur penghapusan akun dan data pengguna aplikasi Aminmart Cashier.">
+    <link rel="icon" type="image/png" href="cashier-icon.png">
+    <script src="config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Statistics tracking for GitHub Pages (client-side only)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to initialize stats from localStorage or stats.json
+            async function initializeStats() {
+                let stats = JSON.parse(localStorage.getItem('websiteStats')) || null;
+                
+                // If no stats in localStorage, try to load from stats.json
+                if (!stats) {
+                    try {
+                        const response = await fetch('stats.json');
+                        if (response.ok) {
+                            stats = await response.json();
+                        } else {
+                            // Default stats if stats.json doesn't exist
+                            stats = {
+                                pageViews: {
+                                    'index.html': 0,
+                                    'contact.html': 0,
+                                    'delete-account.html': 0
+                                },
+                                downloadClicks: {
+                                    'index.html': 0
+                                },
+                                lastUpdated: new Date().toISOString()
+                            };
+                        }
+                    } catch (error) {
+                        console.warn('Could not load stats.json, using default stats:', error);
+                        stats = {
+                            pageViews: {
+                                'index.html': 0,
+                                'contact.html': 0,
+                                'delete-account.html': 0
+                            },
+                            downloadClicks: {
+                                'index.html': 0
+                            },
+                            lastUpdated: new Date().toISOString()
+                        };
+                    }
+                }
+                
+                return stats;
+            }
+            
+            // Track page view
+            initializeStats().then(stats => {
+                const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+                
+                if (stats.pageViews[currentPage] !== undefined) {
+                    stats.pageViews[currentPage]++;
+                } else {
+                    stats.pageViews[currentPage] = 1;
+                }
+                
+                // Update last updated timestamp
+                stats.lastUpdated = new Date().toISOString();
+                
+                // Store updated data back to localStorage
+                localStorage.setItem('websiteStats', JSON.stringify(stats));
+                
+                // Log the event
+                console.log(`Page view tracked for ${currentPage}. Total views: ${stats.pageViews[currentPage]}`);
+            });
+        });
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 182, 193, 0.2);
+        }
+
+        .dark .glass {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-brand-50 text-slate-900 dark:bg-black dark:text-slate-100 transition-colors duration-300">
+
+    <!-- Navbar (loaded from config.js) -->
+    <div id="navbar-container"></div>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-16 px-4">
+        <div
+            class="max-w-4xl mx-auto bg-white dark:bg-slate-900 p-8 md:p-12 rounded-3xl shadow-xl border border-brand-100 dark:border-brand-900">
+            <h1 class="text-3xl font-extrabold mb-6 text-slate-900 dark:text-white">Prosedur Penghapusan Akun</h1>
+            <p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+                Kami sangat menghargai privasi Anda. Jika Anda ingin menghapus akun dan seluruh data yang terkait dengan
+                penggunaan aplikasi <strong class="text-brand-600 dark:text-brand-400">Aminmart Cashier</strong>,
+                silakan ikuti panduan di bawah ini.
+            </p>
+
+            <div class="space-y-8">
+                <!-- Step 1 -->
+                <div class="flex gap-4">
+                    <div
+                        class="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold flex-shrink-0">
+                        1</div>
+                    <div>
+                        <h3 class="text-lg font-bold mb-2 dark:text-white">Penghapusan Lokal</h3>
+                        <p class="text-slate-600 dark:text-slate-400">Aplikasi ini menyimpan data secara lokal di
+                            perangkat Anda. Anda dapat
+                            menghapus seluruh data transaksi dengan masuk ke menu <strong>Pengaturan > Backup & Restore
+                                > Reset Data</strong> atau cukup dengan menghapus (uninstall) aplikasi dari perangkat
+                            Anda.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex gap-4">
+                    <div
+                        class="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold flex-shrink-0">
+                        2</div>
+                    <div>
+                        <h3 class="text-lg font-bold mb-2 dark:text-white">Penghapusan Akun Layanan</h3>
+                        <p class="text-slate-600 dark:text-slate-400">Jika Anda memiliki akun terintegrasi untuk
+                            sinkronisasi cloud, silakan
+                            kirimkan permohonan penghapusan melalui email ke <span
+                                class="font-bold text-brand-600 dark:text-brand-400">office.aminmart@gmail.com</span>
+                            dengan subjek "Permohonan
+                            Penghapusan Akun".</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex gap-4">
+                    <div
+                        class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center font-bold flex-shrink-0">
+                        !</div>
+                    <div>
+                        <h3 class="text-lg font-bold mb-2 text-red-600 dark:text-red-400">Penting: Data Tidak Dapat
+                            Dikembalikan</h3>
+                        <p class="text-slate-600 dark:text-slate-400">Harap dicatat bahwa setelah proses penghapusan
+                            selesai, seluruh
+                            riwayat transaksi, data stok, dan profil toko Anda akan hilang secara permanen dan tidak
+                            dapat dipulihkan kembali.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="mt-12 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <p class="text-sm text-slate-500 dark:text-slate-400 italic text-center">
+                    Proses penghapusan akun melalui email akan diproses dalam waktu maksimal 3x24 jam kerja setelah
+                    verifikasi identitas pemilik akun.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black text-slate-400 py-12 px-4 border-t border-brand-900/20">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 border-b border-white/10 pb-10">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="cashier-icon.png" alt="Logo" class="w-8 h-8 rounded-lg">
+                    <span class="font-extrabold text-xl text-white">Aminmart Cashier</span>
+                </div>
+                <p class="text-sm">Partner terbaik untuk pertumbuhan bisnis UMKM dan retail modern di Indonesia.</p>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4">Tautan Penting</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="index.html" class="hover:text-brand-400 transition">Home</a></li>
+                    <li><a href="install.html" class="hover:text-brand-400 transition">Instalasi</a></li>
+                    <li><a href="contact.html" class="hover:text-brand-400 transition">Kontak Dukungan</a></li>
+                    <li><a href="delete-account.html" class="hover:text-brand-400 transition text-rose-500">Kebijakan
+                            Akun</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4">Hubungi Kami</h4>
+                <p class="text-sm">Email: office.aminmart@gmail.com</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto pt-8 text-center text-xs">
+            &copy; 2026 Aminmart Cashier. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle and mobile menu now handled by config.js
+    </script>
+</body>
+
+</html>

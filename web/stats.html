@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistik Website - Aminmart Cashier</title>
+    <meta name="description" content="Statistik kunjungan dan unduhan website Aminmart Cashier.">
+    <link rel="icon" type="image/png" href="cashier-icon.png">
+    <script src="config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 182, 193, 0.2);
+        }
+
+        .dark .glass {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-brand-50 text-slate-900 dark:bg-black dark:text-slate-100 transition-colors duration-300">
+
+    <!-- Navbar (loaded from config.js) -->
+    <div id="navbar-container"></div>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-16 px-4">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-3xl font-bold mb-8 text-center text-slate-900 dark:text-white">Statistik Website</h1>
+            
+            <div id="stats-container" class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border border-brand-100 dark:border-brand-900">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-white">Data Statistik Terbaru</h2>
+                    <button id="refresh-btn" class="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition">
+                        Refresh Data
+                    </button>
+                </div>
+                
+                <div id="loading" class="text-center py-8 hidden">
+                    <p class="text-slate-600 dark:text-slate-400">Memuat statistik...</p>
+                </div>
+                
+                <div id="stats-content" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-xl border border-blue-100 dark:border-blue-800/50">
+                            <h3 class="text-lg font-bold text-blue-800 dark:text-blue-200 mb-2">Total Halaman Dibuka</h3>
+                            <p id="total-pageviews" class="text-3xl font-bold text-blue-600 dark:text-blue-400">0</p>
+                        </div>
+                        
+                        <div class="bg-green-50 dark:bg-green-900/30 p-6 rounded-xl border border-green-100 dark:border-green-800/50">
+                            <h3 class="text-lg font-bold text-green-800 dark:text-green-200 mb-2">Total Download Klik</h3>
+                            <p id="total-downloads" class="text-3xl font-bold text-green-600 dark:text-green-400">0</p>
+                        </div>
+                        
+                        <div class="bg-purple-50 dark:bg-purple-900/30 p-6 rounded-xl border border-purple-100 dark:border-purple-800/50">
+                            <h3 class="text-lg font-bold text-purple-800 dark:text-purple-200 mb-2">Terakhir Diperbarui</h3>
+                            <p id="last-updated" class="text-lg font-semibold text-purple-600 dark:text-purple-400">-</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4">Statistik Per Halaman</h3>
+                        <div id="page-stats" class="space-y-4">
+                            <!-- Page stats will be inserted here dynamically -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="error-message" class="hidden text-red-500 text-center py-8">
+                    <p>Terjadi kesalahan saat memuat statistik. Silakan refresh halaman.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black text-slate-400 py-12 px-4 border-t border-brand-900/20">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 border-b border-white/10 pb-10">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="cashier-icon.png" alt="Logo" class="w-8 h-8 rounded-lg">
+                    <span class="font-extrabold text-xl text-white">Aminmart Cashier</span>
+                </div>
+                <p class="text-sm">Partner terbaik untuk pertumbuhan bisnis UMKM dan retail modern di Indonesia.</p>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4">Tautan Penting</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="index.html" class="hover:text-brand-400 transition">Home</a></li>
+                    <li><a href="install.html" class="hover:text-brand-400 transition">Instalasi</a></li>
+                    <li><a href="contact.html" class="hover:text-brand-400 transition">Kontak Dukungan</a></li>
+                    <li><a href="delete-account.html" class="hover:text-brand-400 transition text-rose-500">Kebijakan
+                            Akun</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4">Hubungi Kami</h4>
+                <p class="text-sm">Email: office.aminmart@gmail.com</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto pt-8 text-center text-xs">
+            &copy; 2026 Aminmart Cashier. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle and mobile menu now handled by config.js
+
+        // Stats loading functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            document.getElementById('refresh-btn').addEventListener('click', loadStats);
+        });
+
+        function loadStats() {
+            const loadingElement = document.getElementById('loading');
+            const contentElement = document.getElementById('stats-content');
+            const errorElement = document.getElementById('error-message');
+
+            loadingElement.classList.remove('hidden');
+            contentElement.classList.add('hidden');
+            errorElement.classList.add('hidden');
+
+            const storedStats = localStorage.getItem('websiteStats');
+            if (storedStats) {
+                try {
+                    const data = JSON.parse(storedStats);
+                    displayStats(data);
+                    loadingElement.classList.add('hidden');
+                    contentElement.classList.remove('hidden');
+                } catch (error) {
+                    console.error('Error parsing stored stats:', error);
+                    loadFromJsonFile();
+                }
+            } else {
+                loadFromJsonFile();
+            }
+        }
+
+        function loadFromJsonFile() {
+            fetch('stats.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    displayStats(data);
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('stats-content').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error loading stats:', error);
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('error-message').classList.remove('hidden');
+                });
+        }
+
+        function displayStats(data) {
+            let totalPageViews = 0;
+            for (const page in data.pageViews) totalPageViews += data.pageViews[page];
+
+            let totalDownloads = 0;
+            for (const page in data.downloadClicks) totalDownloads += data.downloadClicks[page];
+
+            document.getElementById('total-pageviews').textContent = totalPageViews;
+            document.getElementById('total-downloads').textContent = totalDownloads;
+            document.getElementById('last-updated').textContent = new Date(data.lastUpdated).toLocaleString('id-ID');
+
+            const pageStatsContainer = document.getElementById('page-stats');
+            pageStatsContainer.innerHTML = '';
+
+            for (const page in data.pageViews) {
+                const pageStatDiv = document.createElement('div');
+                pageStatDiv.className = 'p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700';
+                pageStatDiv.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-slate-700 dark:text-slate-300">${page}</span>
+                        <span class="font-bold text-brand-600 dark:text-brand-400">${data.pageViews[page]} kali dibuka</span>
+                    </div>
+                `;
+                pageStatsContainer.appendChild(pageStatDiv);
+            }
+
+            for (const page in data.downloadClicks) {
+                if (data.downloadClicks[page] > 0) {
+                    const downloadStatDiv = document.createElement('div');
+                    downloadStatDiv.className = 'p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 mt-2';
+                    downloadStatDiv.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-slate-700 dark:text-slate-300">${page} - Download Klik</span>
+                            <span class="font-bold text-green-600 dark:text-green-400">${data.downloadClicks[page]} kali klik</span>
+                        </div>
+                    `;
+                    pageStatsContainer.appendChild(downloadStatDiv);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

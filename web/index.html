@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aminmart Cashier - Solusi Kasir Pintar</title>
+    <meta name="description" content="Aplikasi kasir serbaguna untuk pencatatan transaksi toko retail dan manajemen penjualan produk digital secara mandiri.">
+    <!-- Open Graph Metadata for Social Sharing -->
+    <meta property="og:title" content="Aminmart Cashier - Solusi Kasir Pintar" />
+    <meta property="og:description" content="Aplikasi kasir serbaguna untuk pencatatan transaksi toko retail dan manajemen penjualan produk digital secara mandiri." />
+    <meta property="og:image" content="https://wahyuakbarwibowo.github.io/cashier/cashier-icon.png" />
+    <meta property="og:url" content="https://wahyuakbarwibowo.github.io/cashier/index.html" />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/png" href="cashier-icon.png">
+    <script src="config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Statistics tracking for GitHub Pages (client-side only)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to initialize stats from localStorage or stats.json
+            async function initializeStats() {
+                let stats = JSON.parse(localStorage.getItem('websiteStats')) || null;
+                
+                // If no stats in localStorage, try to load from stats.json
+                if (!stats) {
+                    try {
+                        const response = await fetch('stats.json');
+                        if (response.ok) {
+                            stats = await response.json();
+                        } else {
+                            // Default stats if stats.json doesn't exist
+                            stats = {
+                                pageViews: {
+                                    'index.html': 0,
+                                    'contact.html': 0,
+                                    'delete-account.html': 0
+                                },
+                                downloadClicks: {
+                                    'index.html': 0
+                                },
+                                lastUpdated: new Date().toISOString()
+                            };
+                        }
+                    } catch (error) {
+                        console.warn('Could not load stats.json, using default stats:', error);
+                        stats = {
+                            pageViews: {
+                                'index.html': 0,
+                                'contact.html': 0,
+                                'delete-account.html': 0
+                            },
+                            downloadClicks: {
+                                'index.html': 0
+                            },
+                            lastUpdated: new Date().toISOString()
+                        };
+                    }
+                }
+                
+                return stats;
+            }
+            
+            // Track page view
+            initializeStats().then(stats => {
+                const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+                
+                if (stats.pageViews[currentPage] !== undefined) {
+                    stats.pageViews[currentPage]++;
+                } else {
+                    stats.pageViews[currentPage] = 1;
+                }
+                
+                // Update last updated timestamp
+                stats.lastUpdated = new Date().toISOString();
+                
+                // Store updated data back to localStorage
+                localStorage.setItem('websiteStats', JSON.stringify(stats));
+                
+                // Update stats.json file for reference (this won't work on GitHub Pages but is kept for completeness)
+                // Note: This won't actually update the file on GitHub Pages due to static hosting limitations
+                console.log(`Page view tracked for ${currentPage}. Total views: ${stats.pageViews[currentPage]}`);
+            });
+            
+            // Track download button clicks
+            const downloadButtons = document.querySelectorAll('a[href*=".apk"][download]');
+            downloadButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    initializeStats().then(stats => {
+                        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+                        if (stats.downloadClicks[currentPage] !== undefined) {
+                            stats.downloadClicks[currentPage]++;
+                        } else {
+                            stats.downloadClicks[currentPage] = 1;
+                        }
+
+                        stats.lastUpdated = new Date().toISOString();
+                        localStorage.setItem('websiteStats', JSON.stringify(stats));
+                        console.log(`Download click tracked for ${currentPage}. Total downloads: ${stats.downloadClicks[currentPage]}`);
+                    });
+                });
+            });
+        });
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 182, 193, 0.2);
+        }
+
+        .dark .glass {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-brand-50 text-slate-900 dark:bg-black dark:text-slate-100 transition-colors duration-300">
+
+    <!-- Navbar (loaded from config.js) -->
+    <div id="navbar-container"></div>
+
+    <header class="pt-32 pb-16 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
+                Kelola Bisnis <span
+                    class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-pink-400">Lebih Mudah &
+                    Canggih</span>
+            </h1>
+            <p class="text-lg text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto">
+                Aplikasi kasir serbaguna untuk pencatatan transaksi toko retail dan manajemen penjualan produk digital
+                secara mandiri.
+            </p>
+
+            <!-- Download Section -->
+            <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-3xl p-8 mb-10 border border-brand-100 dark:border-brand-900 max-w-3xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">Download Aplikasi</h2>
+
+                <!-- Download Button -->
+                <div class="flex justify-center">
+                    <a href="apk/cashier/app-release.apk" download
+                        class="bg-brand-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-brand-500 transition shadow-lg flex items-center gap-2">
+                        <span>✨</span> Download Aminmart Cashier
+                    </a>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <a href="install.html" class="text-brand-600 dark:text-brand-400 font-semibold hover:underline">
+                        Lihat panduan instalasi lengkap →
+                    </a>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="contact.html"
+                    class="bg-white text-brand-600 dark:bg-slate-900 dark:text-brand-400 px-8 py-4 rounded-2xl font-bold border border-brand-100 dark:border-brand-900 hover:bg-brand-50 dark:hover:bg-brand-900/50 transition shadow-sm">Hubungi
+                    Admin</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Grid -->
+    <section class="py-20 bg-white dark:bg-slate-900/50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold mb-4">Fitur Unggulan</h2>
+                <p class="text-slate-500 dark:text-slate-400">Didesain untuk meningkatkan efisiensi operasional toko
+                    Anda.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="p-8 rounded-3xl bg-blue-50 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800">
+                    <div class="text-4xl mb-4">✨</div>
+                    <h3 class="text-xl font-bold mb-2 text-blue-900 dark:text-blue-300">Manajemen Produk Digital</h3>
+                    <p class="text-blue-700 dark:text-blue-400 opacity-80">Catat penjualan Pulsa, PLN, dan E-Wallet
+                        secara manual dengan kategori yang bisa Anda kustomisasi sesuai keinginan.</p>
+                </div>
+                <!-- Card 2 -->
+                <div
+                    class="p-8 rounded-3xl bg-indigo-50 border border-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800">
+                    <div class="text-4xl mb-4">📊</div>
+                    <h3 class="text-xl font-bold mb-2 text-indigo-900 dark:text-indigo-300">Laporan Akurat</h3>
+                    <p class="text-indigo-700 dark:text-indigo-400 opacity-80">Pantau laba/rugi harian hingga tahunan
+                        dengan filter rentang
+                        tanggal yang fleksibel.</p>
+                </div>
+                <!-- Card 3 -->
+                <div
+                    class="p-8 rounded-3xl bg-slate-50 border border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
+                    <div class="text-4xl mb-4">🖨️</div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-900 dark:text-slate-200">Cetak Struk</h3>
+                    <p class="text-slate-700 dark:text-slate-400 opacity-80">Mendukung printer thermal Bluetooth untuk
+                        mencetak struk
+                        transaksi retail maupun digital secara instan.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black text-slate-400 py-12 px-4 border-t border-brand-900/20">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 border-b border-white/10 pb-10">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="cashier-icon.png" alt="Logo" class="w-8 h-8 rounded-lg">
+                    <span class="font-extrabold text-xl text-white">Aminmart Cashier</span>
+                </div>
+                <p class="text-sm">Partner terbaik untuk pertumbuhan bisnis UMKM dan retail modern di Indonesia.</p>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4">Tautan Penting</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="index.html" class="hover:text-brand-400 transition">Home</a></li>
+                    <li><a href="install.html" class="hover:text-brand-400 transition">Instalasi</a></li>
+                    <li><a href="contact.html" class="hover:text-brand-400 transition">Kontak Dukungan</a></li>
+                    <li><a href="delete-account.html" class="hover:text-brand-400 transition text-rose-500">Kebijakan
+                            Akun</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4">Hubungi Kami</h4>
+                <p class="text-sm">Email: office.aminmart@gmail.com</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto pt-8 text-center text-xs">
+            &copy; 2026 Aminmart Cashier. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle and mobile menu now handled by config.js
+    </script>
+</body>
+
+</html>
