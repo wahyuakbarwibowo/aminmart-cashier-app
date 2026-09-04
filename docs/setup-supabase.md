@@ -63,8 +63,8 @@ Build ulang (`make debug`) -> aplikasi akan meminta login.
 ```bash
 cd admin-web
 cp .env.example .env.local   # isi nilai asli dari Supabase
-npm install
-npm run dev                  # http://localhost:5173
+bun install
+bun run dev                  # http://localhost:5173
 ```
 
 ## 6. Deploy web admin ke Vercel

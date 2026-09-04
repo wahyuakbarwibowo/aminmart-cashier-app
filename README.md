@@ -276,7 +276,7 @@ Sejak v3.0.0 fondasi SaaS sudah aktif:
     ```bash
     cd admin-web
     cp .env.example .env.local   # isi nilai asli dari Supabase
-    npm install && npm run dev
+    bun install && bun run dev
     ```
 *   **Setup lengkap**: [`docs/setup-supabase.md`](docs/setup-supabase.md)
 *   **Roadmap berikutnya**: sinkronisasi data transaksi/produk Room ↔ Supabase
